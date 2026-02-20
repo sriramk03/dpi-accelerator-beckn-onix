@@ -1,0 +1,42 @@
+name: Generate Poetry Lock
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'deploy/onix-installer/backend/pyproject.toml'
+
+jobs:
+  update-lock-file:
+    # Only run on PRs created by the Copybara service account
+    if: contains(github.event.pull_request.head.ref, 'copybara')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Generate Lock File
+        run: |
+          cd deploy/onix-installer/backend
+          poetry lock --no-update
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add deploy/onix-installer/backend/poetry.lock
+          git commit -m "chore: generate poetry.lock for synced changes" || echo "No changes to commit"
+          git push
