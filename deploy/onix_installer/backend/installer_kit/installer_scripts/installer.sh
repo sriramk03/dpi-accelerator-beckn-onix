@@ -35,7 +35,7 @@ validate_prerequisites() {
     echo "--- Checking prerequisites ---"
     local missing_prereqs=()
     local prereq_script_path="./backend/installer_kit/installer_scripts/install_preqreqs.sh"
-    local prereqs=("gcloud" "terraform" "helm" "kubectl" "gsutil" "jq" "gke-gcloud-auth-plugin" "psql" "python3" "node" "ng")
+    local prereqs=("gcloud" "terraform" "helm" "kubectl" "gsutil" "jq" "gke-gcloud-auth-plugin" "psql" "python3" "node" "ng" "poetry")
 
     for prereq in "${prereqs[@]}"; do
         if ! check_command "$prereq"; then
@@ -240,17 +240,10 @@ if [ -d "$BACKEND_DIR" ] && [ -f "$BACKEND_DIR/main.py" ]; then
     (
         cd "$BACKEND_DIR" || exit 1 # Change to backend directory, exit if fails
 
-        # Create venv inside backend directory
-        echo "Creating virtual environment in $BACKEND_DIR/venv..."
-        python3 -m venv venv
-
-        # Activate venv
-        echo "Activating virtual environment..."
-        source venv/bin/activate
-
         # Install backend dependencies
-        echo "🔵 Installing backend dependencies from requirements.txt..."
-        if ! pip3 install -r requirements.txt --require-hashes > "$LOG_DIR/backend-install.log" 2>&1; then
+        echo "🔵 Installing backend dependencies via Poetry..."
+        # --no-root is used because we are deploying the service, not packaging it
+        if ! poetry install --no-root > "$LOG_DIR/backend-install.log" 2>&1; then
             echo "❌ Error: Backend dependency installation failed. Please check the logs at $LOG_DIR/backend-install.log for details."
             exit 1
         fi
@@ -258,10 +251,10 @@ if [ -d "$BACKEND_DIR" ] && [ -f "$BACKEND_DIR/main.py" ]; then
 
         echo "🔵 Starting backend server..."
         echo "View logs at $LOG_DIR/backend.log"
-        uvicorn main:app --reload > "$LOG_DIR/backend.log" 2>&1 &
+        # We include PYTHONPATH to handle the google3 absolute imports for now
+        PYTHONPATH=../../../../../../ poetry run uvicorn main:app --reload > "$LOG_DIR/backend.log" 2>&1 &
 
-        # Store the PID of uvicorn for potential future use in cleanup if needed
-        # (though pkill -f is generally sufficient)
+        # Store the PID of uvicorn for cleanup
         echo "$!" > "$LOG_DIR/backend_uvicorn.pid"
     )
 else
