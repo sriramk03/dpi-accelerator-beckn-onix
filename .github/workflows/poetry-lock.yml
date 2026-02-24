@@ -11,8 +11,9 @@ jobs:
   update-lock-file:
     if: |
       github.event_name == 'workflow_dispatch' || 
-      contains(github.event.pull_request.head.ref, 'copybara') ||
-      github.event.pull_request.user.login == 'sriramk03'
+      (github.event_name == 'pull_request' && 
+      (contains(github.event.pull_request.head.ref, 'copybara') || 
+      github.event.pull_request.user.login == 'sriramk03'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
