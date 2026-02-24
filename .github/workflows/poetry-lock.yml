@@ -36,6 +36,6 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add deploy/onix-installer/backend/poetry.lock
+          git add deploy/onix_installer/backend/poetry.lock
           git commit -m "chore: generate poetry.lock for synced changes" || echo "No changes to commit"
           git push
