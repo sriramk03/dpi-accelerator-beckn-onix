@@ -9,8 +9,10 @@ on:
 
 jobs:
   update-lock-file:
-    # Only run on PRs created by the Copybara service account
-    if: contains(github.event.pull_request.head.ref, 'copybara')
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      contains(github.event.pull_request.head.ref, 'copybara') ||
+      github.event.pull_request.user.login == 'sriramk03'
     runs-on: ubuntu-latest
     permissions:
       contents: write
