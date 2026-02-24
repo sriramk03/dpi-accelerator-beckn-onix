@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'deploy/onix-installer/backend/pyproject.toml'
+      - 'deploy/onix_installer/backend/pyproject.toml'
   workflow_dispatch:
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
 
       - name: Generate Lock File
         run: |
-          cd deploy/onix-installer/backend
+          cd deploy/onix_installer/backend
           # We use --no-update to respect the versions in your pyproject.toml
           poetry lock --no-update
 
