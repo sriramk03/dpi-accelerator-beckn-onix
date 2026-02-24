@@ -9,11 +9,6 @@ on:
 
 jobs:
   update-lock-file:
-    if: |
-      github.event_name == 'workflow_dispatch' || 
-      (github.event_name == 'pull_request' && 
-      (contains(github.event.pull_request.head.ref, 'copybara') || 
-      github.event.pull_request.user.login == 'sriramk03'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -35,8 +30,7 @@ jobs:
       - name: Generate Lock File
         run: |
           cd deploy/onix_installer/backend
-          # We use --no-update to respect the versions in your pyproject.toml
-          poetry lock --no-update
+          poetry lock
 
       - name: Commit and Push changes
         run: |
